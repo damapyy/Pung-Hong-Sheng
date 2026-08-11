@@ -29,6 +29,15 @@ class TreasuryApplication {
         this.setupRouting();
         this.updateHeaderMetrics(window.treasuryStore.getState());
         this.navigateTo('dashboard');
+
+        // Automatically pull latest data from Google Sheets on page load across all devices
+        if (window.treasuryStore.settings.googleAppsScriptUrl) {
+            window.googleSheetsSyncEngine.pullFromSheets().then(res => {
+                console.log(`Auto-synced ${res.count} transactions on load.`);
+            }).catch(err => {
+                console.warn('Initial auto-sync pull deferred:', err);
+            });
+        }
     }
 
     bindGlobalEvents() {

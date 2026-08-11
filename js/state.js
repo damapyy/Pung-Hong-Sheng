@@ -10,8 +10,8 @@ const DEFAULT_SETTINGS = {
     currency: 'RM',
     clubName: 'ESUM Tracker (Engineering Society University of Malaya)',
     fiscalYear: '2025/2026',
-    googleAppsScriptUrl: '',
-    autoSync: false,
+    googleAppsScriptUrl: 'https://script.google.com/macros/s/AKfycbwXXl_qjN4qMGBo0dJGBTBXMRakI00HDgj6k0UbPbWxz5aQsfvFFCi2if50EURkzd7NEQ/exec',
+    autoSync: true,
     lastSyncTime: null,
     theme: 'dark'
 };
@@ -31,7 +31,15 @@ class TreasuryStore {
             const savedData = localStorage.getItem(STORAGE_KEY);
             const savedSettings = localStorage.getItem(SETTINGS_KEY);
 
-            this.settings = savedSettings ? { ...DEFAULT_SETTINGS, ...JSON.parse(savedSettings) } : { ...DEFAULT_SETTINGS };
+            if (savedSettings) {
+                const parsed = JSON.parse(savedSettings);
+                this.settings = { ...DEFAULT_SETTINGS, ...parsed };
+                if (!this.settings.googleAppsScriptUrl) {
+                    this.settings.googleAppsScriptUrl = DEFAULT_SETTINGS.googleAppsScriptUrl;
+                }
+            } else {
+                this.settings = { ...DEFAULT_SETTINGS };
+            }
 
             if (savedData) {
                 const parsed = JSON.parse(savedData);
@@ -227,7 +235,7 @@ class TreasuryStore {
 
     // Replace all data from Google Sheets Sync
     syncFromRemoteData(remoteTransactions, remoteEvents) {
-        if (Array.isArray(remoteTransactions) && remoteTransactions.length > 0) {
+        if (Array.isArray(remoteTransactions)) {
             this.transactions = remoteTransactions;
         }
         if (Array.isArray(remoteEvents) && remoteEvents.length > 0) {
@@ -235,6 +243,7 @@ class TreasuryStore {
         }
         this.settings.lastSyncTime = new Date().toISOString();
         this.saveState();
+        this.notify();
     }
 
     // Core Metrics & Aggregations

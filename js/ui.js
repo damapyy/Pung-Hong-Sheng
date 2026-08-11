@@ -317,8 +317,12 @@ class TreasuryUIManager {
     openSyncModal() {
         const state = this.store.getState();
         const urlInput = document.getElementById('sync-apps-script-url');
+        const autoCheck = document.getElementById('sync-auto-toggle');
         if (urlInput) {
             urlInput.value = state.settings.googleAppsScriptUrl || '';
+        }
+        if (autoCheck) {
+            autoCheck.checked = state.settings.autoSync !== false;
         }
         this.openModal('modal-sync');
     }
