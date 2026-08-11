@@ -561,11 +561,11 @@ class TreasuryApplication {
         const deptCardsContainer = document.getElementById('petty-departments-grid');
         if (deptCardsContainer) {
             const deptMeta = [
-                { key: 'HC', title: 'HC - High Committee', desc: 'Leadership, administrative, and committee welfare', color: '#6366f1' },
-                { key: 'EP', title: 'EP - Events & Projects', desc: 'Logistics, venues, audio equipment, catering', color: '#ec4899' },
-                { key: 'IR', title: 'IR - Industrial Relations', desc: 'Industry partner gifts, protocol, liaisons', color: '#06b6d4' },
-                { key: 'PD', title: 'PD - Partnership Development', desc: 'Sponsorship acquisition, guest honorariums', color: '#f59e0b' },
-                { key: 'C&M', title: 'C&M - Content and Marketing', desc: 'Promotional banners, social ads, merch', color: '#10b981' }
+                { key: 'HC', title: 'HC - High Committee', color: '#6366f1' },
+                { key: 'EP', title: 'EP - Events & Projects', color: '#ec4899' },
+                { key: 'IR', title: 'IR - Industrial Relations', color: '#06b6d4' },
+                { key: 'PD', title: 'PD - Partnership Development', color: '#f59e0b' },
+                { key: 'C&M', title: 'C&M - Content and Marketing', color: '#10b981' }
             ];
 
             const totalPettyExp = state.metrics.pettyCashExpenses || 1;
@@ -578,7 +578,6 @@ class TreasuryApplication {
                         <div class="dept-code" style="color: ${d.color};">${d.key}</div>
                         <div class="dept-title">${d.title}</div>
                         <div class="dept-spent">${window.treasuryUI.formatCurrency(spent)}</div>
-                        <div class="dept-desc">${d.desc}</div>
                         <div class="progress-track mt-2">
                             <div class="progress-bar" style="width: ${pct}%; background-color: ${d.color};"></div>
                         </div>
