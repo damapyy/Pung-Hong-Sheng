@@ -137,13 +137,32 @@ class TreasuryApplication {
             });
         }
 
+        // Push to Google Sheets Button
+        const btnPush = document.getElementById('btn-push-to-sheets');
+        if (btnPush) {
+            btnPush.addEventListener('click', async () => {
+                try {
+                    btnPush.disabled = true;
+                    btnPush.innerHTML = '<span class="spin">🔄</span> Syncing to Google Sheets...';
+                    const res = await window.googleSheetsSyncEngine.pushToSheets();
+                    window.treasuryUI.showToast(res.message || 'Synced to Google Sheets successfully!', res.success ? 'success' : 'info');
+                    window.treasuryUI.closeModal('modal-sync');
+                } catch (e) {
+                    window.treasuryUI.showToast('Push failed: ' + e.message, 'error');
+                } finally {
+                    btnPush.disabled = false;
+                    btnPush.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> <span>Push Data to Google Sheets</span>';
+                }
+            });
+        }
+
         // Pull from Google Sheets Button
         const btnPull = document.getElementById('btn-pull-from-sheets');
         if (btnPull) {
             btnPull.addEventListener('click', async () => {
                 try {
                     btnPull.disabled = true;
-                    btnPull.innerHTML = '<i class="icon-refresh spin"></i> Loading...';
+                    btnPull.innerHTML = '<span class="spin">🔄</span> Loading...';
                     const res = await window.googleSheetsSyncEngine.pullFromSheets();
                     window.treasuryUI.showToast(`Loaded ${res.count} transactions from Google Sheets!`, 'success');
                     window.treasuryUI.closeModal('modal-sync');
@@ -151,7 +170,7 @@ class TreasuryApplication {
                     window.treasuryUI.showToast('Pull failed: ' + e.message, 'error');
                 } finally {
                     btnPull.disabled = false;
-                    btnPull.innerHTML = '<i class="icon-cloud-download"></i> Pull from Google Sheets';
+                    btnPull.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> <span>Pull from Google Sheets</span>';
                 }
             });
         }
