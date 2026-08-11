@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESUM Tracker - Engineering Society UM</title>
+    <meta name="description" content="Official Treasury & Financial Management System for Engineering Society University of Malaya (ESUM).">
+    <link rel="icon" type="image/png" href="assets/esum-logo.png">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Application Stylesheet -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="dark-theme">
+    <div class="app-container">
+        
+        <!-- SIDEBAR NAVIGATION (9 Dedicated Pages) -->
+        <aside class="app-sidebar" id="app-sidebar">
+            <div class="sidebar-header">
+                <img src="assets/esum-logo.png" alt="ESUM Crest Logo" class="brand-logo-img">
+                <div class="brand-info">
+                    <span class="brand-title">ESUM</span>
+                    <span class="brand-subtitle">Tracker</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-title">Core Accounting</div>
+                <a href="#dashboard" class="nav-item active" data-page="dashboard" id="nav-dashboard" onclick="window.treasuryApp.closeSidebar()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                    <span>1. Dashboard</span>
+                </a>
+                <a href="#transactions" class="nav-item" data-page="transactions" id="nav-transactions" onclick="window.treasuryApp.closeSidebar()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    <span>2. Transactions (Entry)</span>
+                </a>
+                
+                <div class="nav-section-title">Account Ledgers</div>
+                <a href="#petty-cash" class="nav-item" data-page="petty-cash" id="nav-petty-cash" onclick="window.treasuryApp.closeSidebar()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                    <span>3. Petty Cash Ledger</span>
+                </a>
+                <a href="#school-tabung" class="nav-item" data-page="school-tabung" id="nav-school-tabung" onclick="window.treasuryApp.closeSidebar()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"></path><path d="M3 10h18"></path><path d="M5 6l7-3 7 3"></path><path d="M4 10v11"></path><path d="M20 10v11"></path><path d="M8 14v4"></path><path d="M12 14v4"></path><path d="M16 14v4"></path></svg>
+                    <span>4. School Tabung Ledger</span>
+                </a>
+                <a href="#transfers" class="nav-item" data-page="transfers" id="nav-transfers" onclick="window.treasuryApp.closeSidebar()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
+                    <span>5. Transfer Log</span>
+                </a>
+
+                <div class="nav-section-title">Reports & Audits</div>
+                <a href="#budget-tracker" class="nav-item" data-page="budget-tracker" id="nav-budget-tracker" onclick="window.treasuryApp.closeSidebar()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+                    <span>6. Budget Tracker</span>
+                </a>
+                <a href="#monthly-report" class="nav-item" data-page="monthly-report" id="nav-monthly-report" onclick="window.treasuryApp.closeSidebar()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span>7. Monthly Report</span>
+                </a>
+                <a href="#category-summary" class="nav-item" data-page="category-summary" id="nav-category-summary" onclick="window.treasuryApp.closeSidebar()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+                    <span>8. Category Summary</span>
+                </a>
+                <a href="#receipt-tracker" class="nav-item" data-page="receipt-tracker" id="nav-receipt-tracker" onclick="window.treasuryApp.closeSidebar()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    <span>9. Receipt Tracker</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="btn btn-secondary btn-sm" id="btn-toggle-theme" style="width: 100%;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    Toggle Theme
+                </button>
+            </div>
+        </aside>
+
+        <!-- Sidebar backdrop for mobile/split-screen -->
+        <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="window.treasuryApp.closeSidebar()"></div>
+
+        <!-- MAIN VIEW PORT -->
+        <main class="app-main">
+            
+            <!-- TOP APP HEADER -->
+            <header class="app-header">
+                <div class="header-left-controls">
+                    <button class="btn-menu-toggle" id="btn-sidebar-toggle" onclick="window.treasuryApp.toggleSidebar()" title="Toggle Navigation Menu">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                    </button>
+                    <div class="header-account-pills">
+                        <div class="account-pill pill-petty" title="Petty Cash Personal Account">
+                            <span class="pill-dot"></span>
+                            <span>Petty Cash: <strong id="header-petty-balance" class="font-mono">RM 0.00</strong></span>
+                        </div>
+                        <div class="account-pill pill-tabung" title="School Tabung Bank Account">
+                            <span class="pill-dot"></span>
+                            <span>School Tabung: <strong id="header-tabung-balance" class="font-mono">RM 0.00</strong></span>
+                        </div>
+                        <div class="account-pill" style="border-color: rgba(99, 102, 241, 0.4);">
+                            <span>Total Assets: <strong id="header-total-balance" class="font-mono text-success">RM 0.00</strong></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="header-actions">
+                    <button class="btn btn-secondary" id="btn-global-sync" title="Configure Google Sheets Sync">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                        <span>Google Sheets Sync</span>
+                    </button>
+                    <button class="btn btn-primary" id="btn-global-add-txn" onclick="window.treasuryUI.openTransactionModal()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        <span>+ Add Transaction</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- ==========================================
+                 PAGE 1: DASHBOARD
+                 ========================================== -->
+            <div class="page-container page-view" id="page-dashboard">
+                <div class="page-header-block">
+                    <div>
+                        <h1 class="page-title">Executive Financial Dashboard</h1>
+                        <p class="page-desc">Real-time overview of petty cash, school tabung, departmental expenditures, and budget status.</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-success" id="btn-quick-sync-push">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                            Sync Sheets
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Account Overview Metric Cards -->
+                <div class="metrics-grid-4">
+                    <div class="metric-card card-petty">
+                        <div class="metric-header">
+                            <span class="metric-label">Petty Cash (Personal)</span>
+                            <div class="metric-icon-badge badge-petty-icon">💵</div>
+                        </div>
+                        <div class="metric-val" id="dash-petty-balance">RM 0.00</div>
+                        <div class="metric-subtext">
+                            <span id="dash-petty-inflow">In: RM 0.00</span> • <span id="dash-petty-outflow">Out: RM 0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-card card-tabung">
+                        <div class="metric-header">
+                            <span class="metric-label">School Tabung (Controlled)</span>
+                            <div class="metric-icon-badge badge-tabung-icon">🏫</div>
+                        </div>
+                        <div class="metric-val" id="dash-tabung-balance">RM 0.00</div>
+                        <div class="metric-subtext">
+                            <span id="dash-tabung-inflow">In: RM 0.00</span> • <span id="dash-tabung-outflow">Out: RM 0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="metric-card card-total">
+                        <div class="metric-header">
+                            <span class="metric-label">Total Combined Assets</span>
+                            <div class="metric-icon-badge badge-total-icon">💎</div>
+                        </div>
+                        <div class="metric-val text-success" id="dash-total-assets">RM 0.00</div>
+                        <div class="metric-subtext">Combined liquidity across both accounts</div>
+                    </div>
+
+                    <div class="metric-card card-net">
+                        <div class="metric-header">
+                            <span class="metric-label">Net Total Cash Flow</span>
+                            <div class="metric-icon-badge badge-total-icon">📈</div>
+                        </div>
+                        <div class="metric-val" id="dash-net-cashflow">RM 0.00</div>
+                        <div class="metric-subtext">Total Inflows minus Total Outflows</div>
+                    </div>
+                </div>
+
+                <!-- Pending Status & Action Center -->
+                <div class="glass-card mb-4" style="margin-bottom: 28px;">
+                    <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 16px;">
+                        ⚠️ Pending Action Center
+                    </h3>
+                    <div class="pending-grid" id="dash-pending-grid"></div>
+                </div>
+
+                <!-- Charts Section (Income vs Expense & Monthly Cash Flow) -->
+                <div class="charts-grid-2">
+                    <div class="glass-card">
+                        <h3 style="font-size: 1rem; font-weight: 800;">Income vs Expense Comparison</h3>
+                        <p class="text-muted" style="font-size: 0.78rem;">Side-by-side breakdown by account source</p>
+                        <div class="chart-wrapper">
+                            <canvas id="chart-income-vs-expense"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="glass-card">
+                        <h3 style="font-size: 1rem; font-weight: 800;">Monthly Cash Flow Trajectory</h3>
+                        <p class="text-muted" style="font-size: 0.78rem;">Net monthly inflows and expenditures</p>
+                        <div class="chart-wrapper">
+                            <canvas id="chart-monthly-cashflow"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Budget Status Grid (Green / Yellow / Red Conditional Formatting) -->
+                <div class="glass-card" style="margin-bottom: 28px;">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h3 style="font-size: 1.05rem; font-weight: 800;">Event Budget Status (Conditional Indicators)</h3>
+                            <p class="text-muted" style="font-size: 0.78rem;">Green (&lt;75% used), Yellow (75%-95% used), Red (&gt;95% or overbudget)</p>
+                        </div>
+                        <button class="btn btn-secondary btn-sm" onclick="window.treasuryUI.openBudgetModal()">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            Add Event
+                        </button>
+                    </div>
+                    <div class="dash-budget-grid" id="dash-budget-grid"></div>
+                </div>
+
+                <!-- Monthly Cash Flow Summary Table -->
+                <div class="glass-card">
+                    <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 16px;">Monthly Cash Flow Table</h3>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Total Income</th>
+                                    <th>Total Expenses</th>
+                                    <th>Net Cash Flow</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dash-monthly-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =======================================================
+                 PAGE 2: TRANSACTIONS (THE CENTRAL MANUAL DATA ENTRY PAGE)
+                 ======================================================= -->
+            <div class="page-container page-view" id="page-transactions" style="display: none;">
+                <div class="page-header-block">
+                    <div>
+                        <h1 class="page-title">Transactions Master Table</h1>
+                        <p class="page-desc">The central manual entry point. All transactions recorded here update the Google Spreadsheet & ledgers automatically.</p>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button class="btn btn-secondary btn-sm" onclick="window.googleSheetsSyncEngine.exportToCSV('transactions')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            Export CSV
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Table Search & Dynamic Filters -->
+                <div class="glass-card mb-4" style="margin-bottom: 24px;">
+                    <div class="table-toolbar">
+                        <div class="search-box">
+                            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            <input type="text" id="table-search-input" class="search-input" placeholder="Search Ref, Payee, Description, Event..." oninput="window.treasuryApp.renderTransactions()">
+                        </div>
+
+                        <div class="filter-group">
+                            <select id="filter-account-select" class="select-filter" onchange="window.treasuryApp.renderTransactions()">
+                                <option value="all">All Accounts</option>
+                                <option value="Petty Cash">Petty Cash</option>
+                                <option value="School Tabung">School Tabung</option>
+                            </select>
+
+                            <select id="filter-type-select" class="select-filter" onchange="window.treasuryApp.renderTransactions()">
+                                <option value="all">All Types</option>
+                                <option value="Income">Income</option>
+                                <option value="Expenses">Expenses</option>
+                                <option value="Transfer">Transfer</option>
+                            </select>
+
+                            <select id="filter-status-select" class="select-filter" onchange="window.treasuryApp.renderTransactions()">
+                                <option value="all">All Statuses</option>
+                                <option value="Completed">Completed</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+
+                            <select id="filter-receipt-select" class="select-filter" onchange="window.treasuryApp.renderTransactions()">
+                                <option value="all">Receipt: All</option>
+                                <option value="Yes">Receipt: Attached (Yes)</option>
+                                <option value="No">Receipt: Missing (No)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Table Scroll Navigation Bar -->
+                    <div class="table-scroll-controls">
+                        <div class="table-scroll-hint">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                            <span>💡 Click any row to edit or view receipt. Use horizontal scroll / swipe to view all columns.</span>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn-scroll-arrow" onclick="window.treasuryApp.scrollTable('transactions-table-container', -300)">
+                                ◀ Scroll Left
+                            </button>
+                            <button class="btn-scroll-arrow" onclick="window.treasuryApp.scrollTable('transactions-table-container', 300)">
+                                Scroll to Status & Actions ▶
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 12px;" id="transactions-count-label">
+                        Loading records...
+                    </div>
+
+                    <!-- Master Transactions Table -->
+                    <div class="table-responsive" id="transactions-table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date & Ref</th>
+                                    <th>Account</th>
+                                    <th>Type</th>
+                                    <th>Category</th>
+                                    <th>Description</th>
+                                    <th class="text-end">Income</th>
+                                    <th class="text-end">Expenses</th>
+                                    <th>Event</th>
+                                    <th>Paid By</th>
+                                    <th class="text-center">Receipt</th>
+                                    <th class="text-center">Status</th>
+                                    <th class="sticky-actions-col">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactions-table-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==========================================
+                 PAGE 3: PETTY CASH LEDGER
+                 ========================================== -->
+            <div class="page-container page-view" id="page-petty-cash" style="display: none;">
+                <div class="page-header-block">
+                    <div>
+                        <h1 class="page-title">Petty Cash Ledger</h1>
+                        <p class="page-desc">Personal treasurer account for fast day-to-day operations and 5 departmental expense allocations.</p>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="window.googleSheetsSyncEngine.exportToCSV('petty_cash')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        Export Ledger CSV
+                    </button>
+                </div>
+
+                <!-- Petty Cash Stats -->
+                <div class="metrics-grid-4">
+                    <div class="metric-card card-petty">
+                        <span class="metric-label">Current Petty Cash Balance</span>
+                        <div class="metric-val text-petty" id="petty-ledger-balance">RM 0.00</div>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Total Petty Inflows</span>
+                        <div class="metric-val text-success" id="petty-ledger-income">RM 0.00</div>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Total Petty Outflows</span>
+                        <div class="metric-val text-danger" id="petty-ledger-expense">RM 0.00</div>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Income Sources</span>
+                        <div style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 8px;">
+                            • Sponsorship<br>• Participant Ticket Fees
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5 Departments Expenditure Breakdown (HC, EP, IR, PD, C&M) -->
+                <div class="glass-card mb-4" style="margin-bottom: 28px;">
+                    <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 16px;">
+                        5 Departments Expenditure Breakdown
+                    </h3>
+                    <div class="dept-grid-5" id="petty-departments-grid"></div>
+                </div>
+
+                <!-- Running Balance Ledger Table -->
+                <div class="glass-card">
+                    <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 16px;">
+                        Date | Description | Income | Expense | Running Balance
+                    </h3>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Ref</th>
+                                    <th>Department / Category</th>
+                                    <th>Description</th>
+                                    <th class="text-end">Income</th>
+                                    <th class="text-end">Expense</th>
+                                    <th class="text-end">Running Balance</th>
+                                    <th class="text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="petty-ledger-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==========================================
+                 PAGE 4: SCHOOL TABUNG LEDGER
+                 ========================================== -->
+            <div class="page-container page-view" id="page-school-tabung" style="display: none;">
+                <div class="page-header-block">
+                    <div>
+                        <h1 class="page-title">School Tabung Ledger</h1>
+                        <p class="page-desc">Official university bank account controlled by school bursary with strict claim cycles and UM First integration.</p>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="window.googleSheetsSyncEngine.exportToCSV('school_tabung')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        Export Tabung CSV
+                    </button>
+                </div>
+
+                <!-- Tabung Stats -->
+                <div class="metrics-grid-4">
+                    <div class="metric-card card-tabung">
+                        <span class="metric-label">Current Tabung Balance</span>
+                        <div class="metric-val text-tabung" id="tabung-ledger-balance">RM 0.00</div>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Total Grants & Subsidies</span>
+                        <div class="metric-val text-success" id="tabung-ledger-income">RM 0.00</div>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Total Tabung Disbursed</span>
+                        <div class="metric-val text-danger" id="tabung-ledger-expense">RM 0.00</div>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Expense Channels</span>
+                        <div style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 8px;">
+                            • Claiming / Bursary Vouchers<br>• UM First Campus System
+                        </div>
+                    </div>
+                </div>
+
+                <!-- School Tabung Flow Cards -->
+                <div class="flow-grid-3" id="tabung-flow-grid"></div>
+
+                <!-- Tabung Ledger Table -->
+                <div class="glass-card">
+                    <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 16px;">
+                        Date | Description | Income | Expense | Running Balance
+                    </h3>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Ref</th>
+                                    <th>Category</th>
+                                    <th>Description</th>
+                                    <th class="text-end">Income</th>
+                                    <th class="text-end">Expense</th>
+                                    <th class="text-end">Running Balance</th>
+                                    <th class="text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabung-ledger-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==========================================
+                 PAGE 5: TRANSFER LOG
+                 ========================================== -->
+            <div class="page-container page-view" id="page-transfers" style="display: none;">
+                <div class="page-header-block">
+                    <div>
+                        <h1 class="page-title">Inter-Account Transfer Log</h1>
+                        <p class="page-desc">Automatically tracks and isolates fund transfers between Personal Petty Cash and School Tabung.</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="window.treasuryUI.openTransactionModal()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        Log New Transfer
+                    </button>
+                </div>
+
+                <div class="glass-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 style="font-size: 1.05rem; font-weight: 800;">Date | From | To | Amount | Status</h3>
+                        <span id="transfers-count-label" class="text-muted" style="font-size: 0.8rem;">0 transfers logged</span>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Ref</th>
+                                    <th>From Account</th>
+                                    <th>To Account</th>
+                                    <th class="text-end">Transfer Amount</th>
+                                    <th>Description</th>
+                                    <th class="text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transfers-table-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==========================================
+                 PAGE 6: BUDGET TRACKER
+                 ========================================== -->
+            <div class="page-container page-view" id="page-budget-tracker" style="display: none;">
+                <div class="page-header-block">
+                    <div>
+                        <h1 class="page-title">Event Budget Tracker</h1>
+                        <p class="page-desc">Track allocated budgets versus actual expenses for each event with sparkline progress indicators.</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-secondary btn-sm" onclick="window.googleSheetsSyncEngine.exportToCSV('budgets')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            Export Budgets CSV
+                        </button>
+                        <button class="btn btn-primary" onclick="window.treasuryUI.openBudgetModal()">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            Add New Event Budget
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Budget Overview Cards -->
+                <div class="metrics-grid-4">
+                    <div class="metric-card">
+                        <span class="metric-label">Total Allocated Budgets</span>
+                        <div class="metric-val" id="budget-total-allocated">RM 0.00</div>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Total Actual Expenses</span>
+                        <div class="metric-val text-danger" id="budget-total-spent">RM 0.00</div>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Total Remaining Budget</span>
+                        <div class="metric-val text-success" id="budget-total-remaining">RM 0.00</div>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Health Legend</span>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 6px;">
+                            🟢 &lt;75% (Healthy)<br>🟡 75%-95% (Warning)<br>🔴 &gt;95% (Critical)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Event Budget Table -->
+                <div class="glass-card">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Event Name</th>
+                                    <th class="text-end">Budget (RM)</th>
+                                    <th class="text-end">Actual Expense (RM)</th>
+                                    <th class="text-end">Remaining (RM)</th>
+                                    <th>Progress Bar / Sparkline</th>
+                                    <th class="text-center">Status</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="budget-tracker-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==========================================
+                 PAGE 7: MONTHLY REPORT
+                 ========================================== -->
+            <div class="page-container page-view" id="page-monthly-report" style="display: none;">
+                <div class="page-header-block">
+                    <div>
+                        <h1 class="page-title">Monthly Financial Report</h1>
+                        <p class="page-desc">Month-by-month financial summary of income, expenses, and net surplus/deficit.</p>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="window.googleSheetsSyncEngine.exportToCSV('monthly')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        Export Monthly Report
+                    </button>
+                </div>
+
+                <div class="glass-card">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th class="text-end">Income</th>
+                                    <th class="text-end">Expense</th>
+                                    <th class="text-end">Net Cash Flow</th>
+                                    <th class="text-end">Petty Cash Net</th>
+                                    <th class="text-end">School Tabung Net</th>
+                                    <th class="text-center">Overall Health</th>
+                                </tr>
+                            </thead>
+                            <tbody id="monthly-report-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==========================================
+                 PAGE 8: CATEGORY SUMMARY
+                 ========================================== -->
+            <div class="page-container page-view" id="page-category-summary" style="display: none;">
+                <div class="page-header-block">
+                    <div>
+                        <h1 class="page-title">Category & Department Summary</h1>
+                        <p class="page-desc">Visual distribution of expenditures across the 5 petty cash departments and school tabung channels.</p>
+                    </div>
+                </div>
+
+                <div class="charts-grid-2">
+                    <div class="glass-card">
+                        <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 8px;">
+                            Petty Cash: 5 Departments
+                        </h3>
+                        <div class="chart-wrapper">
+                            <canvas id="chart-petty-dept-doughnut"></canvas>
+                        </div>
+                        <div class="table-responsive mt-3" style="margin-top: 16px;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Dept Code</th>
+                                        <th>Department Name</th>
+                                        <th class="text-end">Spent (RM)</th>
+                                        <th class="text-end">Share</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="category-petty-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="glass-card">
+                        <h3 style="font-size: 1.05rem; font-weight: 800; margin-bottom: 8px;">
+                            School Tabung: Claiming & UM First
+                        </h3>
+                        <div class="chart-wrapper">
+                            <canvas id="chart-tabung-dept-doughnut"></canvas>
+                        </div>
+                        <div class="table-responsive mt-3" style="margin-top: 16px;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Category</th>
+                                        <th>Channel Name</th>
+                                        <th class="text-end">Spent (RM)</th>
+                                        <th class="text-end">Share</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="category-tabung-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==========================================
+                 PAGE 9: RECEIPT TRACKER
+                 ========================================== -->
+            <div class="page-container page-view" id="page-receipt-tracker" style="display: none;">
+                <div class="page-header-block">
+                    <div>
+                        <h1 class="page-title">Receipt & Audit Tracker</h1>
+                        <p class="page-desc">Audit control center. Green indicates receipt is uploaded & verified, Red highlights missing receipts requiring urgent vendor invoices.</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-secondary btn-sm btn-receipt-filter active" data-filter="all" onclick="window.treasuryApp.setReceiptFilter('all')">
+                            All Records
+                        </button>
+                        <button class="btn btn-secondary btn-sm btn-receipt-filter text-danger" data-filter="missing" onclick="window.treasuryApp.setReceiptFilter('missing')">
+                            Missing Receipts (<span id="receipt-missing-count">0</span>)
+                        </button>
+                        <button class="btn btn-secondary btn-sm btn-receipt-filter text-warning" data-filter="pending" onclick="window.treasuryApp.setReceiptFilter('pending')">
+                            Pending Verify
+                        </button>
+                        <button class="btn btn-secondary btn-sm btn-receipt-filter text-success" data-filter="verified" onclick="window.treasuryApp.setReceiptFilter('verified')">
+                            Verified (<span id="receipt-verified-count">0</span>)
+                        </button>
+                    </div>
+                </div>
+
+                <div class="glass-card">
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Ref</th>
+                                    <th>Date</th>
+                                    <th>Vendor / Paid By</th>
+                                    <th class="text-end">Amount</th>
+                                    <th>Event</th>
+                                    <th class="text-center">Receipt Status</th>
+                                    <th class="text-center">Verified by Treasurer</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="receipt-tracker-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ==========================================
+         MODAL 1: ADD / EDIT TRANSACTION
+         ========================================== -->
+    <div class="modal-overlay" id="modal-transaction">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-transaction-title">Add New Transaction</h3>
+                <button class="modal-close" onclick="window.treasuryUI.closeModal('modal-transaction')">&times;</button>
+            </div>
+            <form id="form-transaction">
+                <input type="hidden" id="txn-id">
+                <div class="modal-body">
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label" for="txn-ref">Reference Code *</label>
+                            <input type="text" id="txn-ref" class="form-input font-mono" required placeholder="e.g. TXN-2026-016">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="txn-date">Transaction Date *</label>
+                            <input type="date" id="txn-date" class="form-input" required>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label" for="txn-account">Account *</label>
+                            <select id="txn-account" class="form-select">
+                                <option value="Petty Cash">Petty Cash (Personal Account)</option>
+                                <option value="School Tabung">School Tabung (School Account)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="txn-type">Type *</label>
+                            <select id="txn-type" class="form-select">
+                                <option value="Expenses">Expenses</option>
+                                <option value="Income">Income</option>
+                                <option value="Transfer">Transfer</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="txn-category">Category / Department *</label>
+                        <select id="txn-category" class="form-select"></select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="txn-desc">Description *</label>
+                        <input type="text" id="txn-desc" class="form-input" required placeholder="e.g. Stage Sound System Downpayment, Banner Printing...">
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group" id="group-income" style="display: none;">
+                            <label class="form-label" for="txn-income">Income Amount (RM) *</label>
+                            <input type="number" step="0.01" min="0" id="txn-income" class="form-input font-mono" placeholder="0.00">
+                        </div>
+                        <div class="form-group" id="group-expenses">
+                            <label class="form-label" for="txn-expenses">Expense Amount (RM) *</label>
+                            <input type="number" step="0.01" min="0" id="txn-expenses" class="form-input font-mono" placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="txn-event">Associated Event *</label>
+                            <select id="txn-event" class="form-select"></select>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label" for="txn-paidby">Paid By / Vendor / Payee</label>
+                            <input type="text" id="txn-paidby" class="form-input" placeholder="e.g. Alex Wong (HC Head), SoundPro Vendor...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="txn-status">Status</label>
+                            <select id="txn-status" class="form-select">
+                                <option value="Completed">Completed</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label" for="txn-receipt">Receipt Attached?</label>
+                            <select id="txn-receipt" class="form-select">
+                                <option value="No">No (Missing Receipt)</option>
+                                <option value="Yes">Yes (Attached)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="txn-receipt-url">Receipt Document Link (URL)</label>
+                            <input type="url" id="txn-receipt-url" class="form-input" placeholder="https://drive.google.com/... or image link">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="txn-notes">Treasurer Notes</label>
+                        <textarea id="txn-notes" class="form-textarea" rows="2" placeholder="Optional internal notes regarding invoice, bank reference, etc."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="custom-checkbox">
+                            <input type="checkbox" id="txn-verified">
+                            <span class="checkmark"></span>
+                            <span style="margin-left: 10px; font-weight: 700; font-size: 0.85rem;">Mark as Verified by Treasurer</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-modal-cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Transaction</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         MODAL 2: RECEIPT VIEWER & VERIFIER
+         ========================================== -->
+    <div class="modal-overlay" id="modal-receipt">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 class="modal-title">Receipt Audit (<span id="receipt-modal-ref">TXN</span>)</h3>
+                <button class="modal-close" onclick="window.treasuryUI.closeModal('modal-receipt')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex justify-content-between mb-3" style="font-size: 0.85rem;">
+                    <div>
+                        <strong id="receipt-modal-desc">-</strong>
+                        <div class="text-muted" id="receipt-modal-vendor">Vendor</div>
+                    </div>
+                    <div class="text-end">
+                        <div class="text-danger font-mono fw-bold" style="font-size: 1.1rem;" id="receipt-modal-amount">RM 0.00</div>
+                        <small class="text-muted" id="receipt-modal-date">Date</small>
+                    </div>
+                </div>
+
+                <div id="receipt-modal-image-container" class="mb-3"></div>
+
+                <div id="receipt-modal-upload-box" style="display: none; padding: 28px; text-align: center; border: 2px dashed var(--color-warning); border-radius: var(--radius-md); background: rgba(245, 158, 11, 0.05);">
+                    <div style="font-size: 2rem; margin-bottom: 8px;">📄</div>
+                    <h4 style="color: var(--color-warning); margin-bottom: 6px;">Receipt Not Yet Attached</h4>
+                    <p class="text-muted" style="font-size: 0.8rem;">Click 'Edit Transaction' to add the receipt link or attach invoice document.</p>
+                </div>
+
+                <input type="hidden" id="receipt-modal-txn-id">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-modal-cancel">Close</button>
+                <button type="button" class="btn btn-success" id="btn-receipt-verify-toggle">
+                    Verify as Treasurer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         MODAL 3: EVENT BUDGET MANAGER
+         ========================================== -->
+    <div class="modal-overlay" id="modal-budget">
+        <div class="modal-box" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-budget-title">Create New Event Budget</h3>
+                <button class="modal-close" onclick="window.treasuryUI.closeModal('modal-budget')">&times;</button>
+            </div>
+            <form id="form-budget-event">
+                <input type="hidden" id="evt-id">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" for="evt-name">Event Name *</label>
+                        <input type="text" id="evt-name" class="form-input" required placeholder="e.g. Annual Grand Gala 2026">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="evt-budget">Allocated Budget (RM) *</label>
+                        <input type="number" step="0.01" min="0" id="evt-budget" class="form-input font-mono" required placeholder="5000.00">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-modal-cancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Event Budget</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         MODAL 4: GOOGLE SHEETS SYNC HUB
+         ========================================== -->
+    <div class="modal-overlay" id="modal-sync">
+        <div class="modal-box" style="max-width: 720px;">
+            <div class="modal-header">
+                <h3 class="modal-title">Google Sheets & Google Drive Integration</h3>
+                <button class="modal-close" onclick="window.treasuryUI.closeModal('modal-sync')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px;">
+                    Connect your spreadsheet to enable live two-way synchronization across all 9 sheets.
+                </p>
+
+                <div class="form-group">
+                    <label class="form-label" for="sync-apps-script-url">Google Apps Script Web App URL</label>
+                    <input type="url" id="sync-apps-script-url" class="form-input font-mono" placeholder="https://script.google.com/macros/s/.../exec">
+                </div>
+
+                <div class="form-group mb-4">
+                    <label class="custom-checkbox">
+                        <input type="checkbox" id="sync-auto-toggle">
+                        <span class="checkmark"></span>
+                        <span style="margin-left: 10px; font-weight: 700; font-size: 0.82rem;">
+                            Auto-sync whenever a transaction is added or edited
+                        </span>
+                    </label>
+                </div>
+
+                <div class="d-flex gap-2 mb-4">
+                    <button type="button" class="btn btn-primary" id="btn-save-sync-settings">
+                        Save & Test Connection
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="btn-pull-from-sheets">
+                        Pull from Google Sheets
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="window.googleSheetsSyncEngine.exportJSONBackup()">
+                        Download JSON Backup
+                    </button>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
+
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="form-label" style="margin: 0;">1-Click Google Apps Script Code (Code.gs)</span>
+                    <button type="button" class="btn btn-secondary btn-sm" id="btn-copy-apps-script">
+                        Copy Code.gs Script
+                    </button>
+                </div>
+
+                <div class="code-box" id="apps-script-code-block">/**
+ * Google Apps Script for University Society & Club Treasury
+ * -------------------------------------------------------------
+ * 1. Open Google Sheets (https://sheets.new)
+ * 2. Click Extensions > Apps Script
+ * 3. Delete existing code and paste this entire file
+ * 4. Click Run > initAllTreasurySheets (grant permissions once)
+ * 5. Click Deploy > New deployment > Select type: "Web App"
+ * 6. Set "Execute as: Me" and "Who has access: Anyone"
+ * 7. Copy the Web App URL and paste it into the Treasurer Web App's Sync Settings!
+ */
+
+const SHEET_NAMES = {
+  DASHBOARD: '1_Dashboard',
+  TRANSACTIONS: '2_Transactions',
+  PETTY_CASH: '3_Petty_Cash_Ledger',
+  SCHOOL_TABUNG: '4_School_Tabung_Ledger',
+  TRANSFERS: '5_Transfer_Log',
+  BUDGET: '6_Budget_Tracker',
+  MONTHLY: '7_Monthly_Report',
+  CATEGORY: '8_Category_Summary',
+  RECEIPTS: '9_Receipt_Tracker'
+};
+
+function initAllTreasurySheets() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  initTransactionsSheet(ss);
+  initPettyCashSheet(ss);
+  initSchoolTabungSheet(ss);
+  initTransfersSheet(ss);
+  initBudgetSheet(ss);
+  initMonthlySheet(ss);
+  initCategorySheet(ss);
+  initReceiptSheet(ss);
+  initDashboardSheet(ss);
+  SpreadsheetApp.flush();
+  SpreadsheetApp.getActiveSpreadsheet().toast('All 9 Treasury Sheets initialized successfully!', 'Treasury System', 5);
+}
+
+function getOrCreateSheet(ss, name) {
+  let sheet = ss.getSheetByName(name);
+  if (!sheet) { sheet = ss.insertSheet(name); }
+  return sheet;
+}
+
+function formatHeader(range, bgColor, textColor = '#FFFFFF') {
+  range.setBackground(bgColor).setFontColor(textColor).setFontWeight('bold').setHorizontalAlignment('center').setVerticalAlignment('middle').setWrap(true);
+}
+
+function initTransactionsSheet(ss) {
+  const sheet = getOrCreateSheet(ss, SHEET_NAMES.TRANSACTIONS);
+  sheet.clear();
+  const headers = [['Ref', 'Date', 'Account', 'Type', 'Category', 'Description', 'Income (RM)', 'Expenses (RM)', 'Event', 'Paid By / Vendor', 'Receipt', 'Verified', 'Status', 'Notes']];
+  sheet.getRange(1, 1, 1, headers[0].length).setValues(headers);
+  formatHeader(sheet.getRange(1, 1, 1, headers[0].length), '#1e293b');
+  sheet.setFrozenRows(1);
+  sheet.getRange('G2:H1000').setNumberFormat('#,##0.00');
+  sheet.getRange('B2:B1000').setNumberFormat('yyyy-mm-dd');
+  sheet.setColumnWidth(1, 120); sheet.setColumnWidth(2, 110); sheet.setColumnWidth(3, 130);
+  sheet.setColumnWidth(4, 100); sheet.setColumnWidth(5, 110); sheet.setColumnWidth(6, 250);
+  sheet.setColumnWidth(7, 120); sheet.setColumnWidth(8, 120); sheet.setColumnWidth(9, 180);
+  sheet.setColumnWidth(10, 180); sheet.setColumnWidth(11, 80); sheet.setColumnWidth(12, 80);
+  sheet.setColumnWidth(13, 100); sheet.setColumnWidth(14, 200);
+}
+
+function initPettyCashSheet(ss) {
+  const sheet = getOrCreateSheet(ss, SHEET_NAMES.PETTY_CASH);
+  sheet.clear();
+  const headers = [['Date', 'Ref', 'Category (Dept)', 'Description', 'Income (Inflow)', 'Expense (Outflow)', 'Running Balance (RM)', 'Status']];
+  sheet.getRange(1, 1, 1, headers[0].length).setValues(headers);
+  formatHeader(sheet.getRange(1, 1, 1, headers[0].length), '#059669');
+  sheet.setFrozenRows(1);
+  sheet.getRange('E2:G1000').setNumberFormat('#,##0.00');
+}
+
+function initSchoolTabungSheet(ss) {
+  const sheet = getOrCreateSheet(ss, SHEET_NAMES.SCHOOL_TABUNG);
+  sheet.clear();
+  const headers = [['Date', 'Ref', 'Category', 'Description', 'Income (Inflow)', 'Expense (Outflow)', 'Running Balance (RM)', 'Status']];
+  sheet.getRange(1, 1, 1, headers[0].length).setValues(headers);
+  formatHeader(sheet.getRange(1, 1, 1, headers[0].length), '#3b82f6');
+  sheet.setFrozenRows(1);
+  sheet.getRange('E2:G1000').setNumberFormat('#,##0.00');
+}
+
+function initTransfersSheet(ss) {
+  const sheet = getOrCreateSheet(ss, SHEET_NAMES.TRANSFERS);
+  sheet.clear();
+  const headers = [['Date', 'Ref', 'From Account', 'To Account', 'Amount (RM)', 'Description', 'Status', 'Verified']];
+  sheet.getRange(1, 1, 1, headers[0].length).setValues(headers);
+  formatHeader(sheet.getRange(1, 1, 1, headers[0].length), '#8b5cf6');
+  sheet.setFrozenRows(1);
+  sheet.getRange('E2:E1000').setNumberFormat('#,##0.00');
+}
+
+function initBudgetSheet(ss) {
+  const sheet = getOrCreateSheet(ss, SHEET_NAMES.BUDGET);
+  sheet.clear();
+  const headers = [['Event Name', 'Allocated Budget (RM)', 'Actual Expenses (RM)', 'Remaining Budget (RM)', '% Spent', 'Health Status']];
+  sheet.getRange(1, 1, 1, headers[0].length).setValues(headers);
+  formatHeader(sheet.getRange(1, 1, 1, headers[0].length), '#0891b2');
+  sheet.setFrozenRows(1);
+  sheet.getRange('B2:D100').setNumberFormat('#,##0.00');
+  sheet.getRange('E2:E100').setNumberFormat('0.0%');
+}
+
+function initMonthlySheet(ss) {
+  const sheet = getOrCreateSheet(ss, SHEET_NAMES.MONTHLY);
+  sheet.clear();
+  const headers = [['Month', 'Total Income (RM)', 'Total Expenses (RM)', 'Net Cash Flow (RM)', 'Petty Cash Net (RM)', 'School Tabung Net (RM)']];
+  sheet.getRange(1, 1, 1, headers[0].length).setValues(headers);
+  formatHeader(sheet.getRange(1, 1, 1, headers[0].length), '#475569');
+  sheet.setFrozenRows(1);
+  sheet.getRange('B2:F100').setNumberFormat('#,##0.00');
+}
+
+function initCategorySheet(ss) {
+  const sheet = getOrCreateSheet(ss, SHEET_NAMES.CATEGORY);
+  sheet.clear();
+  const headers = [['Category / Department', 'Account', 'Type', 'Total Amount (RM)', 'Share of Total Expenses']];
+  sheet.getRange(1, 1, 1, headers[0].length).setValues(headers);
+  formatHeader(sheet.getRange(1, 1, 1, headers[0].length), '#d97706');
+  sheet.setFrozenRows(1);
+  sheet.getRange('D2:D100').setNumberFormat('#,##0.00');
+  sheet.getRange('E2:E100').setNumberFormat('0.0%');
+}
+
+function initReceiptSheet(ss) {
+  const sheet = getOrCreateSheet(ss, SHEET_NAMES.RECEIPTS);
+  sheet.clear();
+  const headers = [['Ref', 'Date', 'Vendor / Paid By', 'Amount (RM)', 'Event', 'Receipt Status', 'Verified by Treasurer', 'Compliance Alert']];
+  sheet.getRange(1, 1, 1, headers[0].length).setValues(headers);
+  formatHeader(sheet.getRange(1, 1, 1, headers[0].length), '#dc2626');
+  sheet.setFrozenRows(1);
+  sheet.getRange('D2:D1000').setNumberFormat('#,##0.00');
+}
+
+function initDashboardSheet(ss) {
+  const sheet = getOrCreateSheet(ss, SHEET_NAMES.DASHBOARD);
+  sheet.clear();
+  sheet.getRange('A1:D1').merge().setValue('SOCIETY CLUB TREASURY - EXECUTIVE SUMMARY')
+       .setBackground('#0f172a').setFontColor('#ffffff').setFontSize(14).setFontWeight('bold').setHorizontalAlignment('center');
+  sheet.getRange('A3').setValue('Account Overview').setFontWeight('bold');
+  sheet.getRange('A4:B7').setValues([
+    ['Petty Cash Account Balance:', `=SUMIF('2_Transactions'!C2:C, "Petty Cash", '2_Transactions'!G2:G) - SUMIFS('2_Transactions'!H2:H, '2_Transactions'!C2:C, "Petty Cash")`],
+    ['School Tabung Balance:', `=SUMIF('2_Transactions'!C2:C, "School Tabung", '2_Transactions'!G2:G) - SUMIFS('2_Transactions'!H2:H, '2_Transactions'!C2:C, "School Tabung")`],
+    ['Total Combined Assets:', `=B4+B5`],
+    ['Net Cash Flow (Total):', `=SUM('2_Transactions'!G2:G) - SUM('2_Transactions'!H2:H)`]
+  ]);
+  sheet.getRange('B4:B7').setNumberFormat('#,##0.00').setFontWeight('bold');
+}
+
+function doGet(e) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const txnSheet = ss.getSheetByName(SHEET_NAMES.TRANSACTIONS);
+    if (!txnSheet) return createJsonResponse({ status: 'error', message: 'Run initAllTreasurySheets first.' });
+    const lastRow = txnSheet.getLastRow();
+    const transactions = [];
+    if (lastRow > 1) {
+      const data = txnSheet.getRange(2, 1, lastRow - 1, 14).getValues();
+      data.forEach((row, idx) => {
+        if (!row[0] && !row[5]) return;
+        let dateStr = row[1] instanceof Date ? Utilities.formatDate(row[1], Session.getScriptTimeZone(), 'yyyy-MM-dd') : String(row[1] || '');
+        transactions.push({
+          id: 'gs-' + idx + '-' + Date.now(),
+          ref: String(row[0] || ''), date: dateStr, account: String(row[2] || 'Petty Cash'),
+          type: String(row[3] || 'Expenses'), category: String(row[4] || 'HC'), description: String(row[5] || ''),
+          income: Number(row[6]) || 0, expenses: Number(row[7]) || 0, event: String(row[8] || ''),
+          paidBy: String(row[9] || ''), receipt: String(row[10] || 'No'),
+          verified: row[11] === true || String(row[11]).toLowerCase() === 'true' || String(row[11]).toLowerCase() === 'yes',
+          status: String(row[12] || 'Completed'), notes: String(row[13] || '')
+        });
+      });
+    }
+    return createJsonResponse({ status: 'success', timestamp: new Date().toISOString(), count: transactions.length, transactions: transactions });
+  } catch (err) { return createJsonResponse({ status: 'error', error: err.toString() }); }
+}
+
+function doPost(e) {
+  try {
+    const postData = JSON.parse(e.postData.contents);
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    if (postData.action === 'syncAll' && Array.isArray(postData.transactions)) {
+      populateTransactionsSheet(ss, postData.transactions);
+      return createJsonResponse({ status: 'success', message: 'Synced ' + postData.transactions.length + ' transactions!', syncedAt: new Date().toISOString() });
+    }
+    return createJsonResponse({ status: 'error', message: 'Unsupported action.' });
+  } catch (err) { return createJsonResponse({ status: 'error', error: err.toString() }); }
+}
+
+function createJsonResponse(data) {
+  return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
+}</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-modal-cancel">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container"></div>
+
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <!-- Application Script Modules -->
+    <script src="js/state.js"></script>
+    <script src="js/sheets.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
