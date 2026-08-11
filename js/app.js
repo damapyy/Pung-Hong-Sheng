@@ -482,7 +482,8 @@ class TreasuryApplication {
                                 <i class="icon-inbox text-muted" style="font-size: 2rem;"></i>
                                 <p class="mt-2">No matching transactions found.</p>
                                 <button class="btn btn-primary btn-sm mt-2" onclick="window.treasuryUI.openTransactionModal()">
-                                    <i class="icon-plus"></i> + Add Transaction
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                    <span>Add Transaction</span>
                                 </button>
                             </div>
                         </td>
@@ -643,7 +644,7 @@ class TreasuryApplication {
         if (tabungFlowGrid) {
             tabungFlowGrid.innerHTML = `
                 <div class="flow-card">
-                    <div class="flow-icon bg-blue-subtle"><i class="icon-file-text"></i></div>
+                    <div class="flow-icon bg-blue-subtle">🏛️</div>
                     <div class="flow-info">
                         <span class="flow-label">Claiming / Reimbursements</span>
                         <span class="flow-amount text-danger">${window.treasuryUI.formatCurrency(tabung['Claiming'] || 0)}</span>
@@ -651,15 +652,15 @@ class TreasuryApplication {
                     </div>
                 </div>
                 <div class="flow-card">
-                    <div class="flow-icon bg-purple-subtle"><i class="icon-shield"></i></div>
+                    <div class="flow-icon bg-purple-subtle">💻</div>
                     <div class="flow-info">
-                        <span class="flow-label">UM First Internal Deductions</span>
+                        <span class="flow-label">UM First</span>
                         <span class="flow-amount text-danger">${window.treasuryUI.formatCurrency(tabung['UM First'] || 0)}</span>
                         <span class="flow-sub">Campus facilities, halls & security</span>
                     </div>
                 </div>
                 <div class="flow-card">
-                    <div class="flow-icon bg-emerald-subtle"><i class="icon-award"></i></div>
+                    <div class="flow-icon bg-emerald-subtle">🎓</div>
                     <div class="flow-info">
                         <span class="flow-label">Faculty Subsidies</span>
                         <span class="flow-amount text-success">${window.treasuryUI.formatCurrency(state.metrics.tabungIncome)}</span>
