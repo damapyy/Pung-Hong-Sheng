@@ -101,12 +101,16 @@ class GoogleSheetsSyncEngine {
                 return { success: true, message: 'Synced successfully to Google Sheets!' };
             }
         } catch (err) {
-            console.error('Push to Google Sheets error:', err);
-            this.store.updateSettings({ lastSyncTime: new Date().toISOString() });
-            return { 
-                success: true, 
-                message: 'Data dispatched to Google Sheets! Please check your spreadsheet.'
-            };
+            console.warn('POST failed, attempting fallback GET dispatch:', err);
+            try {
+                const getUrl = url + (url.includes('?') ? '&' : '?') + 'action=syncAll&payload=' + encodeURIComponent(JSON.stringify(payload));
+                await fetch(getUrl, { mode: 'no-cors' });
+                this.store.updateSettings({ lastSyncTime: new Date().toISOString() });
+                return { success: true, message: 'Synced successfully to Google Sheets!' };
+            } catch (fallbackErr) {
+                console.error('All sync attempts failed:', fallbackErr);
+                return { success: false, message: 'Sync error: ' + err.message };
+            }
         } finally {
             this.isSyncing = false;
         }
