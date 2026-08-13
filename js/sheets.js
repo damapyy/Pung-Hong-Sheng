@@ -18,30 +18,55 @@ class GoogleSheetsSyncEngine {
             return { success: false, message: 'No Google Apps Script URL specified.' };
         }
 
+        // 1. Try standard fetch first
         try {
-            const res = await fetch(targetUrl + (targetUrl.includes('?') ? '&' : '?') + 'ping=' + Date.now(), {
-                method: 'GET',
-                mode: 'cors'
-            });
+            const res = await fetch(targetUrl + (targetUrl.includes('?') ? '&' : '?') + 'ping=' + Date.now(), { mode: 'cors' });
+            if (res.ok) {
+                const data = await res.json();
+                return { success: true, message: 'Successfully connected to Google Apps Script!' };
+            }
+        } catch (e) {
+            // Fetch blocked by browser CORS, switch to JSONP
+        }
 
-            if (!res.ok) {
-                // If CORS preflight blocks or returns status, let's try jsonp or handle response
-                throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        // 2. Guaranteed JSONP Ping (bypasses browser CORS completely)
+        return new Promise((resolve) => {
+            const callbackName = 'googleSheetsPing_' + Math.round(100000 * Math.random());
+            const script = document.createElement('script');
+            
+            const timeoutId = setTimeout(() => {
+                cleanup();
+                resolve({ 
+                    success: false, 
+                    message: 'Connection timed out. Verify Apps Script is deployed with "Who has access: Anyone".' 
+                });
+            }, 8000);
+
+            function cleanup() {
+                clearTimeout(timeoutId);
+                if (script.parentNode) script.parentNode.removeChild(script);
+                delete window[callbackName];
             }
 
-            const data = await res.json();
-            return {
-                success: true,
-                message: 'Successfully connected to Google Apps Script!',
-                data
+            window[callbackName] = (data) => {
+                cleanup();
+                resolve({
+                    success: true,
+                    message: 'Successfully connected to Google Apps Script!'
+                });
             };
-        } catch (err) {
-            console.warn('Direct fetch test failed, might be due to CORS or redirect. Checking alternate proxy...', err);
-            return {
-                success: false,
-                message: 'Unable to reach Google Apps Script directly. Ensure the web app is deployed with "Who has access: Anyone". Error: ' + err.message
+
+            script.src = targetUrl + (targetUrl.includes('?') ? '&' : '?') + 'action=pull&prefix=' + callbackName + '&t=' + Date.now();
+            script.onerror = () => {
+                cleanup();
+                resolve({ 
+                    success: false, 
+                    message: 'Connection failed. Verify Web App is deployed with "Who has access: Anyone".' 
+                });
             };
-        }
+
+            document.head.appendChild(script);
+        });
     }
 
     async pullFromSheets() {
@@ -51,19 +76,58 @@ class GoogleSheetsSyncEngine {
         }
 
         this.isSyncing = true;
+        
+        // 1. First attempt modern fetch
         try {
-            const res = await fetch(url + (url.includes('?') ? '&' : '?') + 'action=pull&t=' + Date.now());
-            const data = await res.json();
-            
-            if (data.status === 'success' && Array.isArray(data.transactions)) {
-                this.store.syncFromRemoteData(data.transactions, data.events);
-                return { success: true, count: data.transactions.length };
-            } else {
-                throw new Error(data.message || 'Invalid data returned from Google Spreadsheet.');
+            const fetchUrl = url + (url.includes('?') ? '&' : '?') + 'action=pull&t=' + Date.now();
+            const res = await fetch(fetchUrl);
+            if (res.ok) {
+                const data = await res.json();
+                if (data.status === 'success' && Array.isArray(data.transactions)) {
+                    this.store.syncFromRemoteData(data.transactions, data.events);
+                    return { success: true, count: data.transactions.length };
+                }
             }
-        } finally {
-            this.isSyncing = false;
+        } catch (fetchErr) {
+            console.warn('Fetch pull blocked by browser CORS, switching to JSONP script fallback...', fetchErr);
         }
+
+        // 2. Guaranteed JSONP Script Fallback (Bypasses all CORS blocks & browser restrictions)
+        return new Promise((resolve, reject) => {
+            const callbackName = 'googleSheetsCallback_' + Math.round(100000 * Math.random());
+            const script = document.createElement('script');
+            
+            const timeoutId = setTimeout(() => {
+                cleanup();
+                reject(new Error('Connection timed out. Ensure Apps Script is deployed with "Who has access: Anyone".'));
+            }, 12000);
+
+            function cleanup() {
+                clearTimeout(timeoutId);
+                if (script.parentNode) script.parentNode.removeChild(script);
+                delete window[callbackName];
+            }
+
+            window[callbackName] = (data) => {
+                cleanup();
+                if (data && data.status === 'success' && Array.isArray(data.transactions)) {
+                    this.store.syncFromRemoteData(data.transactions, data.events);
+                    resolve({ success: true, count: data.transactions.length });
+                } else {
+                    reject(new Error(data.message || 'Invalid data returned from Google Spreadsheet.'));
+                }
+            };
+
+            script.src = url + (url.includes('?') ? '&' : '?') + 'action=pull&prefix=' + callbackName + '&t=' + Date.now();
+            script.onerror = () => {
+                cleanup();
+                reject(new Error('Failed to reach Google Apps Script. Check deployment settings ("Who has access: Anyone").'));
+            };
+
+            document.head.appendChild(script);
+        }).finally(() => {
+            this.isSyncing = false;
+        });
     }
 
     async pushToSheets() {

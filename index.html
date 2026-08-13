@@ -997,12 +997,12 @@ function initAllTreasurySheets() {
   initReceiptSheet(ss);
   initDashboardSheet(ss);
   SpreadsheetApp.flush();
-  SpreadsheetApp.getActiveSpreadsheet().toast('All 9 Treasury Sheets initialized successfully!', 'Treasury System', 5);
+  SpreadsheetApp.getActiveSpreadsheet().toast('All 9 Treasury Sheets initialized!', 'Treasury System', 5);
 }
 
 function getOrCreateSheet(ss, name) {
   let sheet = ss.getSheetByName(name);
-  if (!sheet) { sheet = ss.insertSheet(name); }
+  if (!sheet) sheet = ss.insertSheet(name);
   return sheet;
 }
 
@@ -1019,10 +1019,9 @@ function initTransactionsSheet(ss) {
   sheet.setFrozenRows(1);
   sheet.getRange('G2:H1000').setNumberFormat('#,##0.00');
   sheet.getRange('B2:B1000').setNumberFormat('yyyy-mm-dd');
-  sheet.setColumnWidth(1, 120); sheet.setColumnWidth(2, 110); sheet.setColumnWidth(3, 130);
-  sheet.setColumnWidth(4, 100); sheet.setColumnWidth(5, 110); sheet.setColumnWidth(6, 250);
-  sheet.setColumnWidth(7, 120); sheet.setColumnWidth(8, 120); sheet.setColumnWidth(9, 180);
-  sheet.setColumnWidth(10, 180); sheet.setColumnWidth(11, 80); sheet.setColumnWidth(12, 80);
+  sheet.setColumnWidth(1, 120); sheet.setColumnWidth(2, 110); sheet.setColumnWidth(3, 130); sheet.setColumnWidth(4, 100);
+  sheet.setColumnWidth(5, 110); sheet.setColumnWidth(6, 250); sheet.setColumnWidth(7, 120); sheet.setColumnWidth(8, 120);
+  sheet.setColumnWidth(9, 180); sheet.setColumnWidth(10, 180); sheet.setColumnWidth(11, 80); sheet.setColumnWidth(12, 80);
   sheet.setColumnWidth(13, 100); sheet.setColumnWidth(14, 200);
 }
 
@@ -1116,8 +1115,21 @@ function initDashboardSheet(ss) {
 function doGet(e) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const prefix = (e && e.parameter && e.parameter.prefix) ? e.parameter.prefix : null;
+    if (e && e.parameter && e.parameter.action === 'syncAll' && e.parameter.payload) {
+      try {
+        const postData = JSON.parse(decodeURIComponent(e.parameter.payload));
+        if (Array.isArray(postData.transactions)) {
+          populateTransactionsSheet(ss, postData.transactions);
+          populateLedgerSheets(ss, postData.transactions);
+          if (Array.isArray(postData.events)) populateBudgetSheet(ss, postData.events, postData.transactions);
+          populateReceiptSheet(ss, postData.transactions);
+          return createJsonResponse({ status: 'success', message: 'Synced ' + postData.transactions.length + ' transactions!', syncedAt: new Date().toISOString() }, prefix);
+        }
+      } catch (pErr) { return createJsonResponse({ status: 'error', message: pErr.toString() }, prefix); }
+    }
     const txnSheet = ss.getSheetByName(SHEET_NAMES.TRANSACTIONS);
-    if (!txnSheet) return createJsonResponse({ status: 'error', message: 'Run initAllTreasurySheets first.' });
+    if (!txnSheet) return createJsonResponse({ status: 'error', message: 'Run initAllTreasurySheets first.' }, prefix);
     const lastRow = txnSheet.getLastRow();
     const transactions = [];
     if (lastRow > 1) {
@@ -1136,8 +1148,19 @@ function doGet(e) {
         });
       });
     }
-    return createJsonResponse({ status: 'success', timestamp: new Date().toISOString(), count: transactions.length, transactions: transactions });
-  } catch (err) { return createJsonResponse({ status: 'error', error: err.toString() }); }
+    const budgetSheet = ss.getSheetByName(SHEET_NAMES.BUDGET);
+    const events = [];
+    if (budgetSheet && budgetSheet.getLastRow() > 1) {
+      const bData = budgetSheet.getRange(2, 1, budgetSheet.getLastRow() - 1, 2).getValues();
+      bData.forEach((bRow, bIdx) => {
+        if (bRow[0]) events.push({ id: 'evt-gs-' + bIdx, name: String(bRow[0]), budget: Number(bRow[1]) || 0 });
+      });
+    }
+    return createJsonResponse({ status: 'success', timestamp: new Date().toISOString(), count: transactions.length, transactions: transactions, events: events }, prefix);
+  } catch (err) {
+    const prefix = (e && e.parameter && e.parameter.prefix) ? e.parameter.prefix : null;
+    return createJsonResponse({ status: 'error', error: err.toString() }, prefix);
+  }
 }
 
 function doPost(e) {
@@ -1146,13 +1169,81 @@ function doPost(e) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     if (postData.action === 'syncAll' && Array.isArray(postData.transactions)) {
       populateTransactionsSheet(ss, postData.transactions);
+      populateLedgerSheets(ss, postData.transactions);
+      populateBudgetSheet(ss, postData.events, postData.transactions);
+      populateReceiptSheet(ss, postData.transactions);
       return createJsonResponse({ status: 'success', message: 'Synced ' + postData.transactions.length + ' transactions!', syncedAt: new Date().toISOString() });
     }
     return createJsonResponse({ status: 'error', message: 'Unsupported action.' });
   } catch (err) { return createJsonResponse({ status: 'error', error: err.toString() }); }
 }
 
-function createJsonResponse(data) {
+function populateTransactionsSheet(ss, txns) {
+  const sheet = getOrCreateSheet(ss, SHEET_NAMES.TRANSACTIONS);
+  sheet.getRange(2, 1, Math.max(sheet.getLastRow(), 2), 14).clearContent();
+  if (!txns || txns.length === 0) return;
+  const rows = txns.map(t => [t.ref || '', t.date || '', t.account || 'Petty Cash', t.type || 'Expenses', t.category || '', t.description || '', Number(t.income) || 0, Number(t.expenses) || 0, t.event || '', t.paidBy || '', t.receipt || 'No', t.verified ? 'Yes' : 'No', t.status || 'Completed', t.notes || '']);
+  sheet.getRange(2, 1, rows.length, 14).setValues(rows);
+}
+
+function populateLedgerSheets(ss, txns) {
+  const pettySheet = getOrCreateSheet(ss, SHEET_NAMES.PETTY_CASH);
+  pettySheet.getRange(2, 1, Math.max(pettySheet.getLastRow(), 2), 8).clearContent();
+  const pettyTxns = txns.filter(t => t.account === 'Petty Cash').sort((a, b) => new Date(a.date) - new Date(b.date));
+  let pettyBal = 0;
+  const pettyRows = pettyTxns.map(t => {
+    const inc = Number(t.income) || 0; const exp = Number(t.expenses) || 0;
+    if (t.type === 'Income') pettyBal += inc;
+    if (t.type === 'Expenses' || t.type === 'Transfer') pettyBal -= exp;
+    return [t.date, t.ref, t.category, t.description, inc > 0 ? inc : '', exp > 0 ? exp : '', pettyBal, t.status];
+  });
+  if (pettyRows.length > 0) pettySheet.getRange(2, 1, pettyRows.length, 8).setValues(pettyRows);
+
+  const tabungSheet = getOrCreateSheet(ss, SHEET_NAMES.SCHOOL_TABUNG);
+  tabungSheet.getRange(2, 1, Math.max(tabungSheet.getLastRow(), 2), 8).clearContent();
+  const tabungTxns = txns.filter(t => t.account === 'School Tabung').sort((a, b) => new Date(a.date) - new Date(b.date));
+  let tabungBal = 0;
+  const tabungRows = tabungTxns.map(t => {
+    const inc = Number(t.income) || 0; const exp = Number(t.expenses) || 0;
+    if (t.type === 'Income') tabungBal += inc;
+    if (t.type === 'Expenses' || t.type === 'Transfer') tabungBal -= exp;
+    return [t.date, t.ref, t.category, t.description, inc > 0 ? inc : '', exp > 0 ? exp : '', tabungBal, t.status];
+  });
+  if (tabungRows.length > 0) tabungSheet.getRange(2, 1, tabungRows.length, 8).setValues(tabungRows);
+}
+
+function populateBudgetSheet(ss, events, txns) {
+  const sheet = getOrCreateSheet(ss, SHEET_NAMES.BUDGET);
+  sheet.getRange(2, 1, Math.max(sheet.getLastRow(), 2), 6).clearContent();
+  if (!events || events.length === 0) return;
+  const rows = events.map(evt => {
+    const actual = txns.filter(t => t.event === evt.name && (t.type === 'Expenses' || t.type === 'Transfer')).reduce((sum, t) => sum + (Number(t.expenses) || 0), 0);
+    const budget = Number(evt.budget) || 0;
+    const remaining = budget - actual;
+    const pct = budget > 0 ? actual / budget : 0;
+    let health = '🟢 Safe (<75%)';
+    if (pct > 0.95) health = '🔴 Critical (>95%)';
+    else if (pct >= 0.75) health = '🟡 Warning (75-95%)';
+    return [evt.name, budget, actual, remaining, pct, health];
+  });
+  sheet.getRange(2, 1, rows.length, 6).setValues(rows);
+}
+
+function populateReceiptSheet(ss, txns) {
+  const sheet = getOrCreateSheet(ss, SHEET_NAMES.RECEIPTS);
+  sheet.getRange(2, 1, Math.max(sheet.getLastRow(), 2), 8).clearContent();
+  const rows = txns.map(t => {
+    const hasReceipt = t.receipt === 'Yes'; const isVerified = t.verified === true;
+    let alert = '🟢 Compliant';
+    if (!hasReceipt) alert = '🔴 MISSING RECEIPT';
+    else if (!isVerified) alert = '🟡 Pending Verification';
+    return [t.ref, t.date, t.paidBy || t.description, Number(t.expenses) || Number(t.income) || 0, t.event, t.receipt, isVerified ? 'Yes' : 'No', alert];
+  });
+  if (rows.length > 0) sheet.getRange(2, 1, rows.length, 8).setValues(rows);
+}
+
+function createJsonResponse(data, prefix = null) {
+  if (prefix) return ContentService.createTextOutput(prefix + '(' + JSON.stringify(data) + ');').setMimeType(ContentService.MimeType.JAVASCRIPT);
   return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
 }</div>
             </div>
