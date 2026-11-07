@@ -794,11 +794,19 @@ class TreasuryApplication {
             elRem.className = totalRemaining >= 0 ? 'metric-val text-success' : 'metric-val text-danger';
         }
 
+        const deptBadgesMap = {
+            'HC': 'badge-cat-hc',
+            'EP': 'badge-cat-ep',
+            'IR': 'badge-cat-ir',
+            'PD': 'badge-cat-pd',
+            'C&M': 'badge-cat-cm'
+        };
+
         if (tbody) {
             if (budgets.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="7" class="text-center py-5 text-muted">
+                        <td colspan="8" class="text-center py-5 text-muted">
                             <p style="font-size: 0.95rem; margin-bottom: 8px;">No event budgets created yet.</p>
                             <button class="btn btn-primary btn-sm" onclick="window.treasuryUI.openBudgetModal()">+ Add New Event Budget</button>
                         </td>
@@ -820,9 +828,15 @@ class TreasuryApplication {
                         statusLabel = '🟡 Warning (75-95%)';
                     }
 
+                    let picBadgesHtml = '<span class="badge badge-secondary" style="font-size: 0.72rem;">General / All</span>';
+                    if (Array.isArray(b.departments) && b.departments.length > 0) {
+                        picBadgesHtml = b.departments.map(d => `<span class="badge ${deptBadgesMap[d] || 'badge-secondary'}" style="margin-right: 4px; font-size: 0.74rem;">${d}</span>`).join('');
+                    }
+
                     return `
                         <tr>
                             <td class="fw-bold">${b.name}</td>
+                            <td>${picBadgesHtml}</td>
                             <td class="font-mono text-end">${window.treasuryUI.formatCurrency(b.budget)}</td>
                             <td class="font-mono text-danger text-end fw-bold">${window.treasuryUI.formatCurrency(b.actualExpense)}</td>
                             <td class="font-mono ${b.remaining >= 0 ? 'text-success' : 'text-danger'} text-end fw-bold">
@@ -854,6 +868,78 @@ class TreasuryApplication {
                     `;
                 }).join('');
             }
+        }
+
+        // Render Department PIC & Budget Allocation Section
+        this.renderDepartmentBudgetAllocationSection(budgets);
+    }
+
+    renderDepartmentBudgetAllocationSection(budgets) {
+        const filterSelect = document.getElementById('budget-dept-event-filter');
+        const cardsContainer = document.getElementById('dept-budget-cards-container');
+
+        if (filterSelect) {
+            const currentVal = this.budgetDeptEventFilter || 'all';
+            let optionsHtml = '<option value="all">📊 All Events Combined</option>';
+            budgets.forEach(b => {
+                optionsHtml += `<option value="${b.name}" ${currentVal === b.name ? 'selected' : ''}>${b.name} (${window.treasuryUI.formatCurrency(b.budget)})</option>`;
+            });
+            filterSelect.innerHTML = optionsHtml;
+            filterSelect.value = currentVal;
+
+            filterSelect.onchange = (e) => {
+                this.budgetDeptEventFilter = e.target.value;
+                this.updateDepartmentBudgetCardsAndCharts();
+            };
+        }
+
+        this.updateDepartmentBudgetCardsAndCharts();
+    }
+
+    updateDepartmentBudgetCardsAndCharts() {
+        const filter = this.budgetDeptEventFilter || 'all';
+        const data = window.treasuryStore.getDepartmentBudgetAllocation(filter);
+        const cardsContainer = document.getElementById('dept-budget-cards-container');
+
+        if (cardsContainer) {
+            cardsContainer.innerHTML = data.departments.map(d => {
+                let barClass = 'progress-bar-green';
+                if (d.pctUsed > 95) barClass = 'progress-bar-red';
+                else if (d.pctUsed >= 75) barClass = 'progress-bar-yellow';
+
+                return `
+                    <div class="metric-card" style="border-top: 3px solid ${d.color}; padding: 18px;">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge ${d.badgeClass}" style="font-weight: 600; font-size: 0.78rem;">${d.name}</span>
+                            <span class="text-muted" style="font-size: 0.72rem; font-weight: 500;">${d.eventsCount} Event${d.eventsCount === 1 ? '' : 's'}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-baseline mb-1">
+                            <span class="text-muted" style="font-size: 0.78rem;">Budget:</span>
+                            <span class="font-mono fw-bold" style="font-size: 0.98rem;">${window.treasuryUI.formatCurrency(d.allocated)}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-baseline mb-1" style="font-size: 0.78rem;">
+                            <span class="text-muted">Spent:</span>
+                            <span class="font-mono text-danger fw-bold">${window.treasuryUI.formatCurrency(d.spent)}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-baseline mb-2" style="font-size: 0.78rem;">
+                            <span class="text-muted">Remaining:</span>
+                            <span class="font-mono ${d.remaining >= 0 ? 'text-success' : 'text-danger'} fw-bold">${window.treasuryUI.formatCurrency(d.remaining)}</span>
+                        </div>
+                        <div class="progress-track" style="height: 6px;">
+                            <div class="progress-bar ${barClass}" style="width: ${Math.min(d.pctUsed, 100)}%;"></div>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted mt-1" style="font-size: 0.7rem;">
+                            <span>Utilization</span>
+                            <span class="fw-bold">${d.pctUsed}%</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render interactive charts
+        if (window.treasuryCharts && typeof window.treasuryCharts.initEventBudgetCharts === 'function') {
+            window.treasuryCharts.initEventBudgetCharts(filter);
         }
     }
 
@@ -1127,15 +1213,49 @@ class TreasuryApplication {
             return;
         }
 
+        // Collect checked PIC departments
+        const selectedDepts = [];
+        document.querySelectorAll('input[name="evt-dept"]:checked').forEach(cb => {
+            selectedDepts.push(cb.value);
+        });
+
+        // Collect custom department allocations if custom mode is chosen
+        const isCustom = document.querySelector('input[name="evt-alloc-mode"]:checked')?.value === 'custom';
+        const departmentAllocations = {};
+        if (isCustom && selectedDepts.length > 0) {
+            selectedDepts.forEach(d => {
+                const input = document.querySelector(`.evt-custom-alloc-input[data-dept="${d}"]`);
+                if (input) {
+                    departmentAllocations[d] = parseFloat(input.value) || 0;
+                }
+            });
+        }
+
+        const eventData = {
+            name,
+            budget,
+            departments: selectedDepts,
+            departmentAllocations
+        };
+
         if (id) {
-            window.treasuryStore.updateEventBudget(id, budget);
+            window.treasuryStore.updateEventBudget(id, eventData);
             window.treasuryUI.showToast(`Budget for "${name}" updated!`, 'success');
         } else {
-            window.treasuryStore.addEvent({ name, budget });
+            window.treasuryStore.addEvent(eventData);
             window.treasuryUI.showToast(`New event budget "${name}" created!`, 'success');
         }
 
         window.treasuryUI.closeModal('modal-budget');
+
+        // Immediately auto-sync to Google Sheets so budgets NEVER disappear on page refresh!
+        if (window.treasuryStore.settings.autoSync && window.treasuryStore.settings.googleAppsScriptUrl) {
+            window.googleSheetsSyncEngine.pushToSheets().then(() => {
+                console.log(`Auto-synced event "${name}" to Google Sheets.`);
+            }).catch(err => {
+                console.warn('Auto-sync deferred:', err);
+            });
+        }
     }
 
     handleDeleteEvent(id, name) {
@@ -1144,6 +1264,15 @@ class TreasuryApplication {
             window.treasuryUI.showToast(`Deleted event budget "${name}".`, 'info');
             this.renderBudgetTracker();
             this.renderDashboard();
+
+            // Push deletion to Google Sheets
+            if (window.treasuryStore.settings.autoSync && window.treasuryStore.settings.googleAppsScriptUrl) {
+                window.googleSheetsSyncEngine.pushToSheets().then(() => {
+                    console.log(`Synced deletion of "${name}" to Google Sheets.`);
+                }).catch(err => {
+                    console.warn('Auto-sync deferred:', err);
+                });
+            }
         }
     }
 
