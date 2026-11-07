@@ -269,8 +269,12 @@ class TreasuryUIManager {
 
     // Modal: Receipt Viewer & Verifier
     openReceiptModal(txnId) {
-        const txn = this.store.transactions.find(t => t.id === txnId);
-        if (!txn) return;
+        const txn = this.store.transactions.find(t => t.id === txnId || t.ref === txnId || String(t.id) === String(txnId));
+        if (!txn) {
+            console.warn('Transaction not found for ID:', txnId);
+            this.showToast('Transaction details not found.', 'warning');
+            return;
+        }
 
         const modal = document.getElementById('modal-receipt');
         if (!modal) return;
@@ -285,6 +289,7 @@ class TreasuryUIManager {
         const imgContainer = document.getElementById('receipt-modal-image-container');
         const uploadBox = document.getElementById('receipt-modal-upload-box');
         const verifyBtn = document.getElementById('btn-receipt-verify-toggle');
+        const editBtn = document.getElementById('btn-receipt-edit-txn');
 
         if (txn.receipt === 'Yes' && txn.receiptUrl) {
             imgContainer.innerHTML = `<img src="${txn.receiptUrl}" alt="Receipt Document" class="receipt-preview-img" onerror="this.src='https://via.placeholder.com/600x400?text=Receipt+Image+Unavailable'">`;
@@ -293,6 +298,14 @@ class TreasuryUIManager {
         } else {
             imgContainer.style.display = 'none';
             uploadBox.style.display = 'block';
+        }
+
+        // Edit button inside receipt modal
+        if (editBtn) {
+            editBtn.onclick = () => {
+                this.closeModal('modal-receipt');
+                this.openTransactionModal(txn.id);
+            };
         }
 
         // Verify button state
@@ -336,18 +349,112 @@ class TreasuryUIManager {
         if (!form) return;
         form.reset();
 
+        const deptNames = {
+            'HC': 'High Committee',
+            'EP': 'Events & Projects',
+            'IR': 'Industrial Rel.',
+            'PD': 'Partnership Dev.',
+            'C&M': 'Content & Mktg'
+        };
+        const deptBadges = {
+            'HC': 'badge-cat-hc',
+            'EP': 'badge-cat-ep',
+            'IR': 'badge-cat-ir',
+            'PD': 'badge-cat-pd',
+            'C&M': 'badge-cat-cm'
+        };
+
+        const updateCustomRows = (currentAllocations = {}) => {
+            const isCustom = document.querySelector('input[name="evt-alloc-mode"]:checked')?.value === 'custom';
+            const container = document.getElementById('evt-custom-allocations-container');
+            const rowsContainer = document.getElementById('evt-custom-alloc-rows');
+            const sumEl = document.getElementById('evt-custom-alloc-sum');
+            
+            const checkedBoxes = Array.from(document.querySelectorAll('input[name="evt-dept"]:checked'));
+
+            if (!isCustom || checkedBoxes.length === 0) {
+                if (container) container.style.display = 'none';
+                return;
+            }
+
+            if (container) container.style.display = 'block';
+            if (rowsContainer) {
+                rowsContainer.innerHTML = checkedBoxes.map(cb => {
+                    const d = cb.value;
+                    const prevVal = currentAllocations[d] !== undefined ? currentAllocations[d] : '';
+                    return `
+                        <div class="d-flex align-items-center justify-content-between gap-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge ${deptBadges[d] || 'badge-secondary'}" style="min-width: 50px; text-align: center;">${d}</span>
+                                <span style="font-size: 0.85rem;">${deptNames[d] || d}</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-1">
+                                <span style="font-size: 0.8rem; color: var(--text-secondary);">RM</span>
+                                <input type="number" step="0.01" min="0" 
+                                    class="form-input form-input-sm font-mono evt-custom-alloc-input" 
+                                    data-dept="${d}" 
+                                    value="${prevVal}" 
+                                    placeholder="0.00" 
+                                    style="width: 120px; text-align: right; padding: 4px 8px;">
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                const calcSum = () => {
+                    let total = 0;
+                    document.querySelectorAll('.evt-custom-alloc-input').forEach(inp => {
+                        total += parseFloat(inp.value) || 0;
+                    });
+                    if (sumEl) sumEl.textContent = this.formatCurrency(total);
+                };
+
+                rowsContainer.querySelectorAll('.evt-custom-alloc-input').forEach(inp => {
+                    inp.addEventListener('input', calcSum);
+                });
+                calcSum();
+            }
+        };
+
+        let activeAllocations = {};
+
         if (eventId) {
-            const evt = state.events.find(e => e.id === eventId);
+            const evt = state.events.find(e => e.id === eventId || e.name === eventId);
             if (evt) {
                 titleEl.textContent = 'Edit Event Budget';
                 document.getElementById('evt-id').value = evt.id;
                 document.getElementById('evt-name').value = evt.name;
                 document.getElementById('evt-budget').value = evt.budget;
+
+                const depts = Array.isArray(evt.departments) ? evt.departments : [];
+                document.querySelectorAll('input[name="evt-dept"]').forEach(cb => {
+                    cb.checked = depts.includes(cb.value);
+                });
+
+                activeAllocations = evt.departmentAllocations || {};
+                const hasCustomAlloc = Object.keys(activeAllocations).length > 0;
+                const modeRadio = document.querySelector(`input[name="evt-alloc-mode"][value="${hasCustomAlloc ? 'custom' : 'equal'}"]`);
+                if (modeRadio) modeRadio.checked = true;
+
+                updateCustomRows(activeAllocations);
             }
         } else {
             titleEl.textContent = 'Create New Event Budget';
             document.getElementById('evt-id').value = '';
+            document.querySelectorAll('input[name="evt-dept"]').forEach(cb => {
+                cb.checked = (cb.value === 'EP');
+            });
+            const equalRadio = document.querySelector('input[name="evt-alloc-mode"][value="equal"]');
+            if (equalRadio) equalRadio.checked = true;
+            updateCustomRows({});
         }
+
+        document.querySelectorAll('input[name="evt-dept"]').forEach(cb => {
+            cb.onchange = () => updateCustomRows(activeAllocations);
+        });
+        document.querySelectorAll('input[name="evt-alloc-mode"]').forEach(radio => {
+            radio.onchange = () => updateCustomRows(activeAllocations);
+        });
 
         this.openModal('modal-budget');
     }

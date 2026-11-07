@@ -45,6 +45,26 @@ class TreasuryStore {
                 const parsed = JSON.parse(savedData);
                 this.transactions = parsed.transactions || SEED_TRANSACTIONS;
                 this.events = parsed.events || DEFAULT_EVENTS;
+
+                // Auto-recover any events referenced in transactions that might be missing from this.events
+                const knownEventNames = new Set((this.events || []).map(e => (e.name || '').trim().toLowerCase()));
+                (this.transactions || []).forEach(t => {
+                    if (t.event && t.event !== 'Other / Non-Event' && t.event !== 'None' && t.event.trim().length > 0) {
+                        const norm = t.event.trim().toLowerCase();
+                        if (!knownEventNames.has(norm)) {
+                            knownEventNames.add(norm);
+                            const autoDept = (t.category && ['HC', 'EP', 'IR', 'PD', 'C&M'].includes(t.category)) ? [t.category] : [];
+                            this.events.push({
+                                id: 'evt-auto-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+                                name: t.event.trim(),
+                                budget: 0,
+                                departments: autoDept,
+                                departmentAllocations: {},
+                                color: '#6366f1'
+                            });
+                        }
+                    }
+                });
             } else {
                 this.transactions = [...SEED_TRANSACTIONS];
                 this.events = [...DEFAULT_EVENTS];
@@ -190,19 +210,34 @@ class TreasuryStore {
     addEvent(eventData) {
         const newEvent = {
             id: 'evt-' + Date.now(),
-            name: eventData.name,
+            name: (eventData.name || '').trim(),
             budget: parseFloat(eventData.budget) || 0,
+            departments: Array.isArray(eventData.departments) ? eventData.departments : [],
+            departmentAllocations: eventData.departmentAllocations || {},
             color: eventData.color || '#6366f1'
         };
-        this.events.push(newEvent);
+        // Avoid duplicate by name if exists
+        const existingIdx = this.events.findIndex(e => (e.name || '').trim().toLowerCase() === newEvent.name.toLowerCase());
+        if (existingIdx >= 0) {
+            this.events[existingIdx] = { ...this.events[existingIdx], ...newEvent, id: this.events[existingIdx].id };
+        } else {
+            this.events.push(newEvent);
+        }
         this.saveState();
         return newEvent;
     }
 
-    updateEventBudget(id, budget) {
-        const evt = this.events.find(e => e.id === id);
+    updateEventBudget(id, eventDataOrBudget) {
+        const evt = this.events.find(e => e.id === id || e.name === id);
         if (evt) {
-            evt.budget = parseFloat(budget) || 0;
+            if (typeof eventDataOrBudget === 'object' && eventDataOrBudget !== null) {
+                if (eventDataOrBudget.name) evt.name = eventDataOrBudget.name.trim();
+                if (eventDataOrBudget.budget !== undefined) evt.budget = parseFloat(eventDataOrBudget.budget) || 0;
+                if (Array.isArray(eventDataOrBudget.departments)) evt.departments = eventDataOrBudget.departments;
+                if (eventDataOrBudget.departmentAllocations) evt.departmentAllocations = eventDataOrBudget.departmentAllocations;
+            } else {
+                evt.budget = parseFloat(eventDataOrBudget) || 0;
+            }
             this.saveState();
             return evt;
         }
@@ -211,7 +246,7 @@ class TreasuryStore {
 
     deleteEvent(id) {
         const initialLen = this.events.length;
-        this.events = this.events.filter(e => e.id !== id);
+        this.events = this.events.filter(e => e.id !== id && e.name !== id);
         if (this.events.length !== initialLen) {
             this.saveState();
             return true;
@@ -233,14 +268,74 @@ class TreasuryStore {
         this.saveState();
     }
 
-    // Replace all data from Google Sheets Sync
+    // Replace all data from Google Sheets Sync - SMART MERGE: Never wipe existing data!
     syncFromRemoteData(remoteTransactions, remoteEvents) {
-        if (Array.isArray(remoteTransactions)) {
+        if (Array.isArray(remoteTransactions) && remoteTransactions.length > 0) {
+            this.transactions = remoteTransactions;
+        } else if (Array.isArray(remoteTransactions) && this.transactions.length === 0) {
             this.transactions = remoteTransactions;
         }
-        if (Array.isArray(remoteEvents) && remoteEvents.length > 0) {
-            this.events = remoteEvents;
+
+        // Smart Merge Events - NEVER lose local event budgets on sync/refresh
+        const eventMap = new Map();
+
+        // 1. Preserve existing local events
+        (this.events || []).forEach(evt => {
+            if (evt && evt.name) {
+                eventMap.set(evt.name.trim().toLowerCase(), { ...evt });
+            }
+        });
+
+        // 2. Merge remote events from Google Sheets
+        if (Array.isArray(remoteEvents)) {
+            remoteEvents.forEach(rEvt => {
+                if (rEvt && rEvt.name) {
+                    const key = rEvt.name.trim().toLowerCase();
+                    const existing = eventMap.get(key);
+                    if (existing) {
+                        eventMap.set(key, {
+                            ...existing,
+                            budget: (rEvt.budget !== undefined && rEvt.budget > 0) ? Number(rEvt.budget) : existing.budget,
+                            departments: (Array.isArray(rEvt.departments) && rEvt.departments.length > 0)
+                                ? rEvt.departments
+                                : (existing.departments || []),
+                            departmentAllocations: (rEvt.departmentAllocations && Object.keys(rEvt.departmentAllocations).length > 0)
+                                ? rEvt.departmentAllocations
+                                : (existing.departmentAllocations || {})
+                        });
+                    } else {
+                        eventMap.set(key, {
+                            id: rEvt.id || 'evt-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+                            name: rEvt.name.trim(),
+                            budget: Number(rEvt.budget) || 0,
+                            departments: Array.isArray(rEvt.departments) ? rEvt.departments : [],
+                            departmentAllocations: rEvt.departmentAllocations || {},
+                            color: rEvt.color || '#6366f1'
+                        });
+                    }
+                }
+            });
         }
+
+        // 3. Scan transactions to ensure any event named in transactions is present
+        (this.transactions || []).forEach(t => {
+            if (t.event && t.event !== 'Other / Non-Event' && t.event !== 'None' && t.event.trim().length > 0) {
+                const key = t.event.trim().toLowerCase();
+                if (!eventMap.has(key)) {
+                    const autoDept = (t.category && ['HC', 'EP', 'IR', 'PD', 'C&M'].includes(t.category)) ? [t.category] : [];
+                    eventMap.set(key, {
+                        id: 'evt-auto-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+                        name: t.event.trim(),
+                        budget: 0,
+                        departments: autoDept,
+                        departmentAllocations: {},
+                        color: '#6366f1'
+                    });
+                }
+            }
+        });
+
+        this.events = Array.from(eventMap.values());
         this.settings.lastSyncTime = new Date().toISOString();
         this.saveState();
         this.notify();
@@ -442,6 +537,8 @@ class TreasuryStore {
                 id: evt.id,
                 name: evt.name,
                 budget: evt.budget,
+                departments: Array.isArray(evt.departments) ? evt.departments : [],
+                departmentAllocations: evt.departmentAllocations || {},
                 actualExpense: eventExpenses,
                 remaining,
                 pctUsed: Math.min(Math.round(pctUsed * 10) / 10, 999),
@@ -449,6 +546,72 @@ class TreasuryStore {
                 color: evt.color
             };
         });
+    }
+
+    // Department PIC & Budget Allocation Aggregator
+    getDepartmentBudgetAllocation(filterEvent = 'all') {
+        const depts = [
+            { key: 'HC', name: 'HC - High Committee', shortName: 'HC', color: '#6366f1', badgeClass: 'badge-cat-hc' },
+            { key: 'EP', name: 'EP - Events & Projects', shortName: 'EP', color: '#ec4899', badgeClass: 'badge-cat-ep' },
+            { key: 'IR', name: 'IR - Industrial Relations', shortName: 'IR', color: '#06b6d4', badgeClass: 'badge-cat-ir' },
+            { key: 'PD', name: 'PD - Partnership Development', shortName: 'PD', color: '#f59e0b', badgeClass: 'badge-cat-pd' },
+            { key: 'C&M', name: 'C&M - Content & Marketing', shortName: 'C&M', color: '#10b981', badgeClass: 'badge-cat-cm' }
+        ];
+
+        // Filter events
+        const targetEvents = (filterEvent === 'all' || !filterEvent)
+            ? this.events
+            : this.events.filter(e => e.id === filterEvent || e.name === filterEvent);
+
+        const deptSummaries = depts.map(dept => {
+            let totalAllocated = 0;
+            let totalSpent = 0;
+            let eventsCount = 0;
+
+            targetEvents.forEach(evt => {
+                const isPIC = Array.isArray(evt.departments) && evt.departments.includes(dept.key);
+                const customAlloc = evt.departmentAllocations && typeof evt.departmentAllocations[dept.key] === 'number'
+                    ? evt.departmentAllocations[dept.key]
+                    : null;
+
+                if (isPIC || customAlloc !== null) {
+                    eventsCount++;
+                    if (customAlloc !== null && customAlloc > 0) {
+                        totalAllocated += customAlloc;
+                    } else if (isPIC && evt.departments.length > 0) {
+                        totalAllocated += (evt.budget / evt.departments.length);
+                    }
+                }
+
+                // Calculate actual spending for this department on this event
+                const spent = this.transactions
+                    .filter(t => t.event === evt.name && t.category === dept.key && (t.type === 'Expenses' || t.type === 'Transfer'))
+                    .reduce((sum, t) => sum + (parseFloat(t.expenses) || 0), 0);
+                totalSpent += spent;
+            });
+
+            const remaining = totalAllocated - totalSpent;
+            const pctUsed = totalAllocated > 0 ? (totalSpent / totalAllocated) * 100 : (totalSpent > 0 ? 100 : 0);
+
+            return {
+                ...dept,
+                allocated: totalAllocated,
+                spent: totalSpent,
+                remaining,
+                pctUsed: Math.min(Math.round(pctUsed * 10) / 10, 999),
+                eventsCount
+            };
+        });
+
+        const totalAllocatedAll = deptSummaries.reduce((sum, d) => sum + d.allocated, 0);
+        const totalSpentAll = deptSummaries.reduce((sum, d) => sum + d.spent, 0);
+
+        return {
+            departments: deptSummaries,
+            totalAllocated: totalAllocatedAll,
+            totalSpent: totalSpentAll,
+            totalRemaining: totalAllocatedAll - totalSpentAll
+        };
     }
 
     // Transfer Log

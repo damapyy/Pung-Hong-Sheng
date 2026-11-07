@@ -235,9 +235,10 @@ class GoogleSheetsSyncEngine {
             csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
         } else if (sheetType === 'budgets') {
             const budgets = this.store.getBudgetSummary();
-            const headers = ['Event Name', 'Allocated Budget', 'Actual Expense', 'Remaining', 'Percent Spent', 'Health'];
+            const headers = ['Event Name', 'PIC Departments', 'Allocated Budget', 'Actual Expense', 'Remaining', 'Percent Spent', 'Health'];
             const rows = budgets.map(b => [
                 `"${b.name.replace(/"/g, '""')}"`,
+                `"${(b.departments || []).join('; ')}"`,
                 b.budget,
                 b.actualExpense,
                 b.remaining,

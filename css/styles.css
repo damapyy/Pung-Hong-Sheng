@@ -474,6 +474,34 @@ body {
     margin-bottom: 28px;
 }
 
+.metrics-grid-5 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.dept-checkbox-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.dept-checkbox-card:hover {
+    border-color: var(--color-primary);
+    background: rgba(99, 102, 241, 0.05);
+}
+
+.dept-checkbox-card input[type="checkbox"]:checked ~ span {
+    font-weight: 600;
+}
+
 .metric-card {
     background: var(--bg-card);
     border: 1px solid var(--border-color);

@@ -322,6 +322,152 @@ class TreasuryChartsManager {
             });
         }
     }
+
+    initEventBudgetCharts(filterEvent = 'all') {
+        if (typeof Chart === 'undefined') {
+            setTimeout(() => this.initEventBudgetCharts(filterEvent), 200);
+            return;
+        }
+
+        const data = this.store.getDepartmentBudgetAllocation(filterEvent);
+        const depts = data.departments;
+
+        const isDark = document.body.classList.contains('dark-theme') || !document.body.classList.contains('light-theme');
+        const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
+        const textColor = isDark ? '#94a3b8' : '#64748b';
+
+        // 1. Department Budget vs Actual Expense Bar Chart
+        const barCanvas = document.getElementById('chart-dept-budget-allocation');
+        if (barCanvas) {
+            if (this.charts['deptBudgetAllocation']) {
+                this.charts['deptBudgetAllocation'].destroy();
+            }
+
+            const labels = depts.map(d => d.shortName);
+            const allocatedData = depts.map(d => d.allocated);
+            const spentData = depts.map(d => d.spent);
+
+            this.charts['deptBudgetAllocation'] = new Chart(barCanvas, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Allocated Budget (RM)',
+                            data: allocatedData,
+                            backgroundColor: '#6366f1',
+                            borderRadius: 6,
+                            barPercentage: 0.6,
+                            categoryPercentage: 0.8
+                        },
+                        {
+                            label: 'Actual Expenses (RM)',
+                            data: spentData,
+                            backgroundColor: '#ec4899',
+                            borderRadius: 6,
+                            barPercentage: 0.6,
+                            categoryPercentage: 0.8
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: textColor,
+                                font: { family: "'Plus Jakarta Sans', sans-serif", size: 12, weight: '500' },
+                                usePointStyle: true,
+                                padding: 14
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#0f172a',
+                            padding: 12,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    return ` ${context.dataset.label}: ${window.treasuryUI.formatCurrency(context.raw)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: textColor, font: { weight: '600' } }
+                        },
+                        y: {
+                            grid: { color: gridColor },
+                            ticks: {
+                                color: textColor,
+                                callback: val => 'RM ' + Number(val).toLocaleString()
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 2. Department Budget Share Doughnut Chart
+        const doughnutCanvas = document.getElementById('chart-dept-budget-share');
+        if (doughnutCanvas) {
+            if (this.charts['deptBudgetShare']) {
+                this.charts['deptBudgetShare'].destroy();
+            }
+
+            const labels = depts.map(d => d.name);
+            const values = depts.map(d => d.allocated);
+            const colors = depts.map(d => d.color);
+            const hasData = values.some(v => v > 0);
+
+            this.charts['deptBudgetShare'] = new Chart(doughnutCanvas, {
+                type: 'doughnut',
+                data: {
+                    labels: hasData ? labels : ['No Allocations Yet'],
+                    datasets: [{
+                        data: hasData ? values : [1],
+                        backgroundColor: hasData ? colors : ['#334155'],
+                        borderWidth: 2,
+                        borderColor: isDark ? '#0f172a' : '#ffffff',
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '68%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: textColor,
+                                font: { family: "'Plus Jakarta Sans', sans-serif", size: 11, weight: '500' },
+                                padding: 12,
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#0f172a',
+                            padding: 12,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    if (!hasData) return ' No budget allocated yet';
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const val = context.raw;
+                                    const pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
+                                    return ` ${context.label}: ${window.treasuryUI.formatCurrency(val)} (${pct}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
 }
 
 window.treasuryCharts = new TreasuryChartsManager(window.treasuryStore);
